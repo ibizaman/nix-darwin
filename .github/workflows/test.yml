@@ -290,3 +290,24 @@ jobs:
           --flake git+file:///tmp/test-nix-darwin-submodules?submodules=1#simple \
           --override-input nix-darwin . \
           --override-input nixpkgs nixpkgs/nixpkgs-unstable
+
+
+  verify-knownSha256-files:
+    runs-on: macos-12
+    timeout-minutes: 30
+    steps:
+    - uses: actions/checkout@v3
+    - name: Verify Checksum
+      run: |
+        exit_val=0
+
+        cd doc/known-files
+        for f in *; do
+          sha="$(sha256sum "$f" | cut -d' ' -f1)"
+          if [[ "$sha" != "$f" ]]; then
+            echo "$f" file\'s sha256 does not match its actual sha256: "$sha"
+            exit_val=1
+          fi
+        done
+
+        exit "$exit_val"
